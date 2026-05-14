@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidad — Sueño Bebé</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #222; line-height: 1.6; }
+    h1 { color: #b85c38; }
+    h2 { color: #444; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+    th { background: #f5f5f5; }
+    .warning { background: #fff8e1; border-left: 4px solid #ffc107; padding: 12px 16px; margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <h1>Política de Privacidad — Sueño Bebé</h1>
+  <p><strong>Versión:</strong> 1 &nbsp;|&nbsp; <strong>Última actualización:</strong> 4 de mayo de 2026</p>
+
+  <div class="warning">
+    ⚠️ Este documento está en proceso de revisión jurídica profesional.
+  </div>
+
+  <h2>1. Responsable del tratamiento</h2>
+  <table>
+    <tr><th>Email de contacto</th><td>privacidad@suenobebe.app</td></tr>
+  </table>
+
+  <h2>2. Datos que recabamos</h2>
+  <h3>2.1 Datos de cuenta</h3>
+  <ul>
+    <li>Dirección de correo electrónico</li>
+    <li>Nombre o alias</li>
+    <li>Foto de perfil (opcional)</li>
+    <li>Identificador único de cuenta (Firebase UID)</li>
+  </ul>
+  <h3>2.2 Datos del bebé</h3>
+  <ul>
+    <li>Nombre, fecha de nacimiento, sexo</li>
+    <li>Foto (opcional)</li>
+  </ul>
+  <h3>2.3 Datos de actividad</h3>
+  <ul>
+    <li>Eventos de sueño y alimentación (tipo, hora de inicio, hora de fin, duración, notas)</li>
+  </ul>
+  <h3>2.4 Datos técnicos</h3>
+  <ul>
+    <li>Identificadores de dispositivo, tokens FCM</li>
+    <li>Datos de uso (Firebase Analytics), registros de errores (Crashlytics)</li>
+    <li>Token de verificación de compra de Google Play (no accedemos a datos de tarjeta)</li>
+  </ul>
+  <h3>2.5 Datos publicitarios</h3>
+  <p>Para usuarios sin suscripción activa, podemos mostrar anuncios gestionados por Google AdMob, sujeto a consentimiento previo conforme al RGPD.</p>
+
+  <h2>3. Finalidades del tratamiento</h2>
+  <table>
+    <tr><th>Finalidad</th><th>Base jurídica</th></tr>
+    <tr><td>Prestación del servicio</td><td>Ejecución de contrato (Art. 6.1.b RGPD)</td></tr>
+    <tr><td>Gestión de cuentas y autenticación</td><td>Ejecución de contrato</td></tr>
+    <tr><td>Gestión de suscripciones y pagos</td><td>Ejecución de contrato</td></tr>
+    <tr><td>Notificaciones push</td><td>Consentimiento (Art. 6.1.a RGPD)</td></tr>
+    <tr><td>Analítica de uso (Firebase Analytics)</td><td>Interés legítimo (Art. 6.1.f RGPD)</td></tr>
+    <tr><td>Detección de errores (Crashlytics)</td><td>Interés legítimo</td></tr>
+    <tr><td>Publicidad (AdMob)</td><td>Consentimiento</td></tr>
+  </table>
+
+  <h2>4. Proveedores (encargados del tratamiento)</h2>
+  <table>
+    <tr><th>Proveedor</th><th>Finalidad</th><th>País</th></tr>
+    <tr><td>Google LLC (Firebase)</td><td>Infraestructura, BD, analítica, FCM</td><td>EE.UU. (SCCs)</td></tr>
+    <tr><td>Google LLC (Play Billing)</td><td>Pagos y suscripciones</td><td>EE.UU. (SCCs)</td></tr>
+    <tr><td>Google LLC (AdMob)</td><td>Publicidad</td><td>EE.UU. (SCCs)</td></tr>
+  </table>
+  <p>Las transferencias a EE.UU. se realizan mediante Cláusulas Contractuales Tipo (SCCs) aprobadas por la Comisión Europea.</p>
+
+  <h2>5. Conservación de los datos</h2>
+  <p>Los datos se conservan mientras la cuenta esté activa. Tras la solicitud de borrado existe un periodo de gracia de <strong>7 días</strong>. Transcurrido ese plazo, los datos se eliminan de forma permanente.</p>
+
+  <h2>6. Derechos del usuario</h2>
+  <p>Conforme al RGPD, puede ejercer sus derechos de acceso, rectificación, supresión, limitación, portabilidad y oposición contactando en: <strong>privacidad@suenobebe.app</strong></p>
+  <p>También puede reclamar ante la <a href="https://www.aepd.es">AEPD</a>.</p>
+
+  <h2>7. Datos de menores</h2>
+  <p>La aplicación está dirigida exclusivamente a usuarios <strong>mayores de 18 años</strong> (padres/tutores). No recabamos datos directamente de menores.</p>
+
+  <h2>8. SDKs de terceros</h2>
+  <ul>
+    <li><strong>Firebase Analytics / Crashlytics:</strong> identificadores de dispositivo para analítica y errores.</li>
+    <li><strong>AdMob / UMP:</strong> identificadores para publicidad personalizada, previa obtención de consentimiento mediante el formulario UMP integrado.</li>
+  </ul>
+
+  <h2>9. Seguridad</h2>
+  <p>Cifrado en tránsito (TLS/HTTPS), reglas de seguridad de Firestore por usuario autenticado, autenticación mediante Firebase Auth.</p>
+
+  <h2>10. Cambios en esta política</h2>
+  <p>Los cambios significativos se notificarán dentro de la app. La versión aceptada por el usuario queda registrada.</p>
+</body>
+</html>
