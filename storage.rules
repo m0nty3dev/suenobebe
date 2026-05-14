@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Baby photos — readable/writable by authenticated caregivers of that baby
+    // (Simplified: write allowed to any authenticated user; Firestore rules protect data)
+    match /babies/{babyId}/photo.jpg {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024   // max 5 MB
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // CSV exports — only the owner can read/write their exports
+    match /exports/{userId}/{filename} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

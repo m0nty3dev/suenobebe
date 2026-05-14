@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Users ────────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ── Babies ───────────────────────────────────────────────────────────────
+    match /babies/{babyId} {
+      function isCaregiverOf() {
+        return request.auth != null
+          && request.auth.uid in resource.data.caregivers;
+      }
+
+      allow read: if isCaregiverOf();
+
+      // Creation: solo el admin puede crear y debe estar en caregivers (tamaño 1)
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.adminId
+        && request.resource.data.caregivers.size() == 1
+        && request.resource.data.caregivers[0] == request.auth.uid;
+
+      // Update: cuidadores existentes; cambios en caregivers solo via Cloud Function
+      allow update: if isCaregiverOf()
+        && request.resource.data.caregivers == resource.data.caregivers;
+
+      // Delete: solo via Cloud Function
+      allow delete: if false;
+
+      // ── Events ─────────────────────────────────────────────────────────────
+      match /events/{eventId} {
+        function isBabyCaregiverForEvents() {
+          return request.auth != null
+            && request.auth.uid in get(/databases/$(database)/documents/babies/$(babyId)).data.caregivers;
+        }
+
+        function hasValidEventType() {
+          return request.resource.data.type in [
+            'morning_wake', 'nap', 'bedtime', 'night_wake', 'nursing', 'bottle'
+          ];
+        }
+
+        function hasValidEventStatus() {
+          return request.resource.data.status in ['live', 'completed'];
+        }
+
+        allow read, delete: if isBabyCaregiverForEvents();
+
+        allow create: if isBabyCaregiverForEvents()
+          && hasValidEventType()
+          && hasValidEventStatus()
+          && request.resource.data.createdBy == request.auth.uid;
+
+        allow update: if isBabyCaregiverForEvents()
+          && hasValidEventType()
+          && hasValidEventStatus();
+      }
+
+      // ── Daily Stats ────────────────────────────────────────────────────────
+      match /dailyStats/{day} {
+        allow read: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/babies/$(babyId)).data.caregivers;
+        allow write: if false; // solo Cloud Function
+      }
+    }
+
+    // ── Invitations ──────────────────────────────────────────────────────────
+    match /invitations/{code} {
+      allow read: if request.auth != null;   // necesita leer para validar
+      allow write: if false;                  // solo Cloud Function
+    }
+
+    // ── Config ───────────────────────────────────────────────────────────────
+    match /config/{doc} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

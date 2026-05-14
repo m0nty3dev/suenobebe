@@ -1,0 +1,169 @@
+{
+  "@@locale": "es",
+  "appTitle": "Sueño Bebé",
+  "home": "Inicio",
+  "stats": "Estadísticas",
+  "settings": "Ajustes",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "edit": "Editar",
+  "confirm": "Confirmar",
+  "close": "Cerrar",
+  "back": "Volver",
+  "next": "Siguiente",
+  "skip": "Saltar",
+  "loading": "Cargando...",
+  "error": "Ha ocurrido un error",
+  "retry": "Reintentar",
+
+  "loginTitle": "Bienvenido a Sueño Bebé",
+  "loginSubtitle": "Registra el sueño y la alimentación de tu bebé",
+  "signInWithGoogle": "Continuar con Google",
+  "signInWithEmail": "Continuar con email",
+  "emailLabel": "Email",
+  "passwordLabel": "Contraseña",
+  "nameLabel": "Nombre",
+  "signIn": "Iniciar sesión",
+  "createAccount": "Crear cuenta",
+  "noAccount": "¿No tienes cuenta?",
+  "alreadyAccount": "¿Ya tienes cuenta?",
+
+  "onboardingBabyTitle": "Datos del bebé",
+  "onboardingBabySubtitle": "Cuéntanos sobre tu pequeño/a",
+  "babyName": "Nombre del bebé",
+  "birthDate": "Fecha de nacimiento",
+  "sex": "Sexo",
+  "male": "Niño",
+  "female": "Niña",
+  "other": "Otro",
+  "addPhoto": "Añadir foto",
+
+  "onboardingShareTitle": "¿Compartes el cuidado?",
+  "createInviteCode": "Crear código de invitación",
+  "haveCode": "Tengo un código",
+  "later": "Más tarde",
+
+  "onboardingLegalTitle": "Términos y privacidad",
+  "acceptTerms": "Acepto los términos de uso y la política de privacidad",
+  "iAm18": "Soy mayor de 18 años",
+  "continueButton": "Continuar",
+
+  "onboardingNotificationsTitle": "Notificaciones",
+  "onboardingNotificationsSubtitle": "Te avisaremos si llevas más de 3 horas sin registrar nada durante el día",
+  "enableNotifications": "Activar notificaciones",
+  "notNow": "Ahora no",
+
+  "morningWake": "Despertar mañana",
+  "nap": "Siesta",
+  "bedtime": "Ir a la cama",
+  "nightWake": "Despertar nocturno",
+  "nursing": "Lactancia",
+  "bottle": "Biberón",
+
+  "addEvent": "Añadir evento",
+  "startNow": "Iniciar ahora",
+  "enterManually": "Introducir manualmente",
+  "startTime": "Hora de inicio",
+  "endTime": "Hora de fin",
+  "duration": "Duración",
+  "note": "Nota",
+  "optional": "Opcional",
+  "bottleMl": "Cantidad (ml)",
+  "leftBreast": "Pecho izquierdo",
+  "rightBreast": "Pecho derecho",
+  "switchSide": "Cambiar lado",
+  "finish": "Finalizar",
+
+  "sleeping": "Durmiendo hace",
+  "awake": "Despierto hace",
+  "eating": "Comiendo desde hace",
+  "lastMeal": "Última toma hace",
+  "noRecordsYet": "Sin registros aún",
+
+  "dayMode": "Modo día",
+  "nightMode": "Modo noche",
+
+  "trialBanner": "Prueba gratuita: {days} días restantes",
+  "@trialBanner": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "paywallTitle": "Acceso completo a Sueño Bebé",
+  "paywallSubtitle": "Continúa registrando sin límites",
+  "paywallFeature1": "Registro ilimitado de eventos",
+  "paywallFeature2": "Sin anuncios",
+  "paywallFeature3": "Estadísticas avanzadas (próximamente)",
+  "paywallFeature4": "Predicciones de sueño (próximamente)",
+  "monthlyPlan": "Mensual · 3,99 €",
+  "annualPlan": "Anual · 11,99 €",
+  "annualSaving": "Ahorra 75%",
+  "subscribe": "Suscribirme",
+  "restorePurchase": "Restaurar compra",
+  "autoRenewNotice": "Se renueva automáticamente. Cancela cuando quieras en Google Play.",
+
+  "settingsTitle": "Ajustes",
+  "babyData": "Datos del bebé",
+  "caregivers": "Cuidadores",
+  "subscription": "Suscripción",
+  "notifications": "Notificaciones",
+  "language": "Idioma",
+  "theme": "Tema",
+  "exportData": "Exportar mis datos",
+  "signOut": "Cerrar sesión",
+  "deleteAccount": "Borrar cuenta",
+  "termsAndPrivacy": "Términos y Privacidad",
+  "appVersion": "Versión",
+
+  "themeAuto": "Automático (según modo día/noche)",
+  "themeLight": "Claro",
+  "themeDark": "Oscuro",
+
+  "deleteAccountTitle": "Borrar cuenta",
+  "deleteAccountMessage": "Tu cuenta y todos los datos asociados se eliminarán en 7 días. Puedes cancelar este proceso iniciando sesión durante ese periodo.",
+  "deleteAccountConfirm": "Borrar mi cuenta",
+  "cancelDeletion": "Cancelar borrado",
+
+  "overlapError": "Este horario se solapa con {event}. Edítalo primero.",
+  "@overlapError": {
+    "placeholders": {
+      "event": {"type": "String"}
+    }
+  },
+
+  "deleteEventTitle": "¿Eliminar evento?",
+  "deleteEventMessage": "Esta acción no se puede deshacer.",
+
+  "statsTitle": "Estadísticas",
+  "today": "Hoy",
+  "last7Days": "7 días",
+  "last30Days": "30 días",
+  "totalSleep": "Sueño total",
+  "daySleep": "Sueño diurno",
+  "nightSleep": "Sueño nocturno",
+  "feedings": "Tomas",
+  "nightWakes": "Despertares nocturnos",
+  "avgSleep": "Media de sueño",
+  "noDataYet": "Sin datos todavía",
+
+  "inviteCodeTitle": "Código de invitación",
+  "inviteCodeMessage": "Comparte este código con el otro cuidador. Caduca en 24h.",
+  "redeemCodeTitle": "Unirme a un bebé",
+  "redeemCodeHint": "Introduce el código de 6 dígitos",
+  "redeemButton": "Unirme",
+  "invalidCode": "Código inválido o caducado",
+
+  "subscriptionActive": "Suscripción activa",
+  "subscriptionTrial": "Periodo de prueba",
+  "subscriptionExpired": "Suscripción expirada",
+  "subscriptionNone": "Sin suscripción",
+  "manageOnGooglePlay": "Gestionar en Google Play",
+  "nextRenewal": "Próxima renovación: {date}",
+  "@nextRenewal": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
+}
