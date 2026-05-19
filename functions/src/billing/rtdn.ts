@@ -72,13 +72,17 @@ async function refreshSubscriptionStatus(
   const cancelReason = sub.cancelReason;
   const paymentState = sub.paymentState;
 
+  // Keep consistent with validatePurchase.ts: any non-null cancelReason means
+  // the subscription was cancelled (by user, developer, or Google).
   let status: string;
   if (paymentState === 0) {
     status = "on_hold";
-  } else if (sub.userCancellationTimeMillis && cancelReason === 0) {
-    status = "cancelled";
   } else if (paymentState === 1 || paymentState === 2) {
-    status = "active";
+    if (cancelReason !== undefined && cancelReason !== null) {
+      status = "cancelled";
+    } else {
+      status = "active";
+    }
   } else {
     status = "expired";
   }
@@ -216,6 +220,14 @@ export const playBillingRTDN = functions.https.onRequest(
           await admin.firestore().collection("babies").doc(babyId).update({
             "subscription.status": "expired",
             "subscription.autoRenew": false,
+            "subscription.lastVerifiedAt": admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          break;
+
+        case SubscriptionNotificationType.PAUSED:
+          await admin.firestore().collection("babies").doc(babyId).update({
+            "subscription.status": "on_hold",
             "subscription.lastVerifiedAt": admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });

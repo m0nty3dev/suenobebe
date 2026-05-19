@@ -84,11 +84,22 @@ async function computeAndWriteDay(babyId: string, dayKey: string): Promise<void>
           morningWakeAt = e.startAt;
         }
         break;
-      case 'nursing':
+      case 'nursing': {
+        feedingCount++;
+        // Prefer per-breast durations (sum of left+right) over total durationSec,
+        // as they represent actual nursing time rather than session wall-clock time.
+        const leftSec = e.metadata?.leftDurationSec ?? 0;
+        const rightSec = e.metadata?.rightDurationSec ?? 0;
+        const nursingMin = (leftSec > 0 || rightSec > 0)
+          ? Math.round((leftSec + rightSec) / 60)
+          : dur;
+        totalFeedingMinutes += nursingMin;
+        break;
+      }
       case 'bottle':
         feedingCount++;
         totalFeedingMinutes += dur;
-        if (e.type === 'bottle' && e.metadata?.bottleMl) {
+        if (e.metadata?.bottleMl) {
           totalBottleMl += e.metadata.bottleMl;
         }
         break;

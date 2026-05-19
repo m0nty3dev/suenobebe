@@ -40,9 +40,9 @@ class _ManualEntryScreenState extends ConsumerState<ManualEntryScreen> {
         ? EventType.fromFirestore(widget.initialType!)
         : EventType.nap;
 
-    // Default start time = active day at current time
+    // Default start time = active day at current Madrid time (not device local time).
     final activeDay = ref.read(activeDayProvider);
-    final now = DateTime.now();
+    final now = AppDateUtils.nowMadrid();
     _startAt = DateTime(activeDay.year, activeDay.month, activeDay.day, now.hour, now.minute);
   }
 

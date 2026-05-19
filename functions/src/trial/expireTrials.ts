@@ -4,21 +4,33 @@ import { REGION } from '../config/region';
 
 const db = admin.firestore();
 
-async function markExpired(refs: admin.firestore.DocumentReference[]): Promise<void> {
-  const chunks = [];
-  for (let i = 0; i < refs.length; i += 490) {
-    chunks.push(refs.slice(i, i + 490));
-  }
-  for (const chunk of chunks) {
-    const batch = db.batch();
-    for (const ref of chunk) {
-      batch.update(ref, {
-        'subscription.status': 'trial_expired',
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+// Guard against the race condition where a concurrent purchase validation sets
+// subscription.status='active' just before this function runs. Each baby is
+// updated individually via a transaction that checks the current status instead
+// of a blind batch update.
+async function markExpiredIfStillTrial(
+  refs: admin.firestore.DocumentReference[],
+): Promise<number> {
+  let updated = 0;
+  for (const ref of refs) {
+    try {
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(ref);
+        if (!snap.exists) return;
+        const currentStatus = snap.data()!['subscription']?.status as string | undefined;
+        // Only expire if still in a trial/none state — never overwrite 'active'.
+        if (currentStatus !== 'trial' && currentStatus !== 'none') return;
+        tx.update(ref, {
+          'subscription.status': 'trial_expired',
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        updated++;
       });
+    } catch (err) {
+      functions.logger.warn('expireTrials: transaction failed for baby', { babyId: ref.id, err });
     }
-    await batch.commit();
   }
+  return updated;
 }
 
 export const expireTrials = functions.scheduler.onSchedule(
@@ -62,8 +74,8 @@ export const expireTrials = functions.scheduler.onSchedule(
     }
 
     if (toExpire.length > 0) {
-      await markExpired(toExpire);
-      functions.logger.info(`Expired ${toExpire.length} trials`);
+      const updated = await markExpiredIfStillTrial(toExpire);
+      functions.logger.info(`Expired ${updated} trials (${toExpire.length} candidates checked)`);
     }
   },
 );

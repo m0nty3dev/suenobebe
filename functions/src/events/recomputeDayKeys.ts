@@ -88,10 +88,8 @@ export const recomputeDayKeys = functions.firestore.onDocumentWritten(
       await batch.commit();
     }
 
-    if (toUpdate.length > 0) {
-      functions.logger.info(
-        `recomputeDayKeys: updated ${toUpdate.length} events for baby ${babyId} to dayKey ${newDayKey}`,
-      );
-    }
+    functions.logger.info(
+      `recomputeDayKeys: ${toUpdate.length} events updated for baby ${babyId} to dayKey ${newDayKey} (${eventsSnap.size} in window)`,
+    );
   },
 );

@@ -13,12 +13,16 @@ function isQuietHours(localHour: number): boolean {
 
 function isWithinDaytime(
   localHour: number,
+  localMinute: number,
   estimatedMorningWake: string,
   estimatedBedtime: string
 ): boolean {
-  const [wakeH] = estimatedMorningWake.split(":").map(Number);
-  const [bedH] = estimatedBedtime.split(":").map(Number);
-  return localHour >= wakeH && localHour < bedH;
+  const [wakeH, wakeM = 0] = estimatedMorningWake.split(":").map(Number);
+  const [bedH, bedM = 0] = estimatedBedtime.split(":").map(Number);
+  const nowTotal = localHour * 60 + localMinute;
+  const wakeTotal = wakeH * 60 + wakeM;
+  const bedTotal = bedH * 60 + bedM;
+  return nowTotal >= wakeTotal && nowTotal < bedTotal;
 }
 
 export const checkInactivity = functions.scheduler.onSchedule(
@@ -30,15 +34,18 @@ export const checkInactivity = functions.scheduler.onSchedule(
   async () => {
     const db = admin.firestore();
     const now = new Date();
-    // Convert to Europe/Madrid local hour regardless of server timezone
-    const madridHour = parseInt(
-      new Intl.DateTimeFormat('es-ES', {
-        timeZone: TIMEZONE,
-        hour: 'numeric',
-        hour12: false,
-      }).format(now),
-      10,
-    );
+    // Use '2-digit' so hour 0 (midnight) is "00" not a Unicode char that parseInt misparses.
+    const madridHourStr = new Intl.DateTimeFormat('es-ES', {
+      timeZone: TIMEZONE,
+      hour: '2-digit',
+      hour12: false,
+    }).format(now);
+    const madridMinuteStr = new Intl.DateTimeFormat('es-ES', {
+      timeZone: TIMEZONE,
+      minute: '2-digit',
+    }).format(now);
+    const madridHour = parseInt(madridHourStr, 10);
+    const madridMinute = parseInt(madridMinuteStr, 10);
 
     // Skip quiet hours globally — most babies in same timezone in Spain
     if (isQuietHours(madridHour)) {
@@ -74,7 +81,7 @@ export const checkInactivity = functions.scheduler.onSchedule(
       const estimatedBedtime: string = baby.estimatedBedtime ?? "22:00";
 
       // Check if we're in daytime for this baby
-      if (!isWithinDaytime(madridHour, estimatedMorningWake, estimatedBedtime)) {
+      if (!isWithinDaytime(madridHour, madridMinute, estimatedMorningWake, estimatedBedtime)) {
         continue;
       }
 
@@ -91,9 +98,11 @@ export const checkInactivity = functions.scheduler.onSchedule(
       let shouldNotify = false;
 
       if (recentEventSnap.empty) {
-        // No events today at all — check if enough time has passed since morning wake
-        const morningWakeH = parseInt(estimatedMorningWake.split(":")[0], 10);
-        if (madridHour >= morningWakeH + INACTIVITY_THRESHOLD_HOURS) {
+        // No events today at all — check if enough time has passed since estimated morning wake
+        const [wakeH, wakeM = 0] = estimatedMorningWake.split(":").map(Number);
+        const nowTotalMin = madridHour * 60 + madridMinute;
+        const wakeThresholdMin = wakeH * 60 + wakeM + INACTIVITY_THRESHOLD_HOURS * 60;
+        if (nowTotalMin >= wakeThresholdMin) {
           shouldNotify = true;
         }
       } else {
@@ -132,8 +141,8 @@ export const checkInactivity = functions.scheduler.onSchedule(
           messages.push({
             token,
             notification: {
-              title: `¿Está durmiendo ${babyName}?`,
-              body: `Llevas más de ${INACTIVITY_THRESHOLD_HOURS}h sin registrar nada. ¿Todo bien?`,
+              title: `¿Se durmió ${babyName}?`,
+              body: `Llevas más de ${INACTIVITY_THRESHOLD_HOURS}h sin registrar nada.`,
             },
             android: {
               priority: "normal",

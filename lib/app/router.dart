@@ -59,6 +59,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (isLoggedIn && user != null) {
+        // Fully-onboarded users must not be able to re-enter the onboarding flow
+        // (e.g., by navigating directly to /onboarding/legal to reset legalAccepted).
+        final fullyOnboarded =
+            user.legalAccepted != null && user.currentBabyId != null;
+        if (fullyOnboarded && isOnboardingRoute) return '/home';
+
         if (user.legalAccepted == null && !isOnboardingRoute) {
           return '/onboarding/baby';
         }

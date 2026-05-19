@@ -56,20 +56,34 @@ export const updateEventCallable = functions.https.onCall(
       ? (data.endAt != null ? admin.firestore.Timestamp.fromMillis(data.endAt) : null)
       : existing.endAt as admin.firestore.Timestamp | null;
 
-    // Validate no-overlap (exclude this event itself)
+    // Validate no-overlap (exclude this event itself).
+    // Query both the existing dayKey and the next calendar day in case endAt
+    // crosses midnight into a different dayKey (e.g., event starts 23:30, ends 00:30).
     if (endAt != null) {
-      const overlapSnap = await db
-        .collection('babies').doc(data.babyId)
-        .collection('events')
-        .where('dayKey', '==', existing.dayKey)
-        .where('startAt', '<', endAt)
-        .get();
+      const dayKeyParts = existing.dayKey.split('-').map(Number);
+      const d = new Date(Date.UTC(dayKeyParts[0], dayKeyParts[1] - 1, dayKeyParts[2]));
+      d.setUTCDate(d.getUTCDate() + 1);
+      const nextDayKey = d.toISOString().substring(0, 10);
+      const dayKeys = [existing.dayKey, nextDayKey];
 
-      for (const doc of overlapSnap.docs) {
+      const snapshots = await Promise.all(
+        dayKeys.map((dk) =>
+          db
+            .collection('babies').doc(data.babyId)
+            .collection('events')
+            .where('dayKey', '==', dk)
+            .where('startAt', '<', endAt)
+            .get()
+        )
+      );
+      const allDocs = snapshots.flatMap((s) => s.docs);
+
+      for (const doc of allDocs) {
         if (doc.id === data.eventId) continue;
         const ev = doc.data();
         const evEnd = ev.endAt ?? admin.firestore.Timestamp.fromMillis(Date.now());
-        if (evEnd.toMillis() > startAt.toMillis()) {
+        // Use >= to catch point-in-time boundary events.
+        if (evEnd.toMillis() >= startAt.toMillis()) {
           throw new functions.https.HttpsError(
             'already-exists',
             `Se solapa con ${ev.type} a las ${new Date(ev.startAt.toMillis()).toLocaleTimeString('es-ES')}`,

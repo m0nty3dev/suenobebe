@@ -64,7 +64,8 @@ export const createEventCallable = functions.https.onCall(
       for (const doc of overlapSnap.docs) {
         const ev = doc.data();
         const evEnd = ev.endAt ?? admin.firestore.Timestamp.fromMillis(Date.now());
-        if (evEnd.toMillis() > startAt.toMillis()) {
+        // Use >= to catch point-in-time events that share an exact boundary.
+        if (evEnd.toMillis() >= startAt.toMillis()) {
           throw new functions.https.HttpsError(
             'already-exists',
             `Se solapa con ${ev.type} a las ${new Date(ev.startAt.toMillis()).toLocaleTimeString('es-ES')}`,
