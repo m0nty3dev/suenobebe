@@ -36,13 +36,17 @@ class NotificationService {
         FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
-      final deviceId = await _getOrCreateDeviceId();
-      FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'fcmTokens.$deviceId': {
-          'token': token,
-          'updatedAt': FieldValue.serverTimestamp(),
-        },
-      }).ignore();
+      try {
+        final deviceId = await _getOrCreateDeviceId();
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'fcmTokens.$deviceId': {
+            'token': token,
+            'updatedAt': FieldValue.serverTimestamp(),
+          },
+        });
+      } catch (_) {
+        // Non-critical — next successful persistToken call will sync the token.
+      }
     });
   }
 

@@ -21,6 +21,7 @@ class StatsRepository {
         .where(FieldPath.documentId, isGreaterThanOrEqualTo: fromDay)
         .where(FieldPath.documentId, isLessThanOrEqualTo: toDay)
         .orderBy(FieldPath.documentId)
+        .limit(31)
         .get();
     return snap.docs.map(DailyStats.fromFirestore).toList();
   }
@@ -34,6 +35,7 @@ class StatsRepository {
         .where(FieldPath.documentId, isGreaterThanOrEqualTo: fromDay)
         .where(FieldPath.documentId, isLessThanOrEqualTo: toDay)
         .orderBy(FieldPath.documentId)
+        .limit(31)
         .snapshots()
         .map((snap) => snap.docs.map(DailyStats.fromFirestore).toList());
   }

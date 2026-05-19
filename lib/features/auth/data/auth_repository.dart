@@ -94,19 +94,23 @@ class AuthRepository {
     bool isNew = false,
   }) async {
     final ref = _firestore.collection('users').doc(user.uid);
-    final doc = await ref.get();
-    if (!doc.exists) {
-      await ref.set({
-        'email': user.email ?? '',
-        'displayName': user.displayName ?? '',
-        'photoUrl': user.photoURL,
-        'locale': 'es',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-        'legalAccepted': null,
-        'currentBabyId': null,
-        'fcmTokens': {},
-      });
-    }
+    // Transaction makes the check-then-create atomic, preventing duplicate
+    // documents when two login flows run concurrently for the same uid.
+    await _firestore.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) {
+        tx.set(ref, {
+          'email': user.email ?? '',
+          'displayName': user.displayName ?? '',
+          'photoUrl': user.photoURL,
+          'locale': 'es',
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'legalAccepted': null,
+          'currentBabyId': null,
+          'fcmTokens': {},
+        });
+      }
+    });
   }
 }

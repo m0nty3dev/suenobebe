@@ -263,7 +263,9 @@ class EventsRepository {
     if (dayKey != null) {
       query = query.where('dayKey', isEqualTo: dayKey);
     }
-    final snap = await query.get();
+    // Limit prevents a full collection scan; 50 is well above any realistic
+    // same-day event count, so legitimate overlaps are never missed.
+    final snap = await query.limit(50).get();
     final events = snap.docs
         .map((doc) {
           try {
@@ -288,6 +290,15 @@ class EventsRepository {
         .orderBy('startAt', descending: true)
         .limit(5)
         .snapshots()
-        .map((snap) => snap.docs.map(BabyEvent.fromFirestore).toList());
+        .map((snap) => snap.docs
+            .map((doc) {
+              try {
+                return BabyEvent.fromFirestore(doc);
+              } catch (_) {
+                return null;
+              }
+            })
+            .whereType<BabyEvent>()
+            .toList());
   }
 }
