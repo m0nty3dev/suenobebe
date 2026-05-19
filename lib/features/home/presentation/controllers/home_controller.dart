@@ -40,6 +40,17 @@ final todayEventsProvider = StreamProvider.autoDispose<List<BabyEvent>>((ref) {
   return ref.watch(eventsRepositoryProvider).watchEventsForDay(baby.id, todayKey);
 });
 
+// Yesterday's events — needed by the sleep counter at night after midnight.
+// Bedtime lives in yesterday's dayKey; without this the counter shows
+// "Sin registros" even while the baby is sleeping.
+final prevTodayEventsProvider = StreamProvider.autoDispose<List<BabyEvent>>((ref) {
+  final baby = ref.watch(currentBabyProvider).valueOrNull;
+  if (baby == null) return Stream.value([]);
+  final yesterday = AppDateUtils.nowMadrid().subtract(const Duration(days: 1));
+  final dayKey = AppDateUtils.toDayKey(yesterday);
+  return ref.watch(eventsRepositoryProvider).watchEventsForDay(baby.id, dayKey);
+});
+
 // Last 14 days of events for personalized nap prediction.
 final recentEventsProvider = StreamProvider.autoDispose<List<BabyEvent>>((ref) {
   final baby = ref.watch(currentBabyProvider).valueOrNull;
@@ -67,6 +78,19 @@ final prevActiveDayEventsProvider = StreamProvider.autoDispose<List<BabyEvent>>(
 
   final prevDay = ref.watch(activeDayProvider).subtract(const Duration(days: 1));
   final dayKey = AppDateUtils.toDayKey(prevDay);
+
+  return ref.watch(eventsRepositoryProvider).watchEventsForDay(baby.id, dayKey);
+});
+
+// Events for the day AFTER the active day — needed by the night timeline
+// (evening mode) to display the actual morningWake time of the next day
+// when viewing a historical night.
+final nextActiveDayEventsProvider = StreamProvider.autoDispose<List<BabyEvent>>((ref) {
+  final baby = ref.watch(currentBabyProvider).valueOrNull;
+  if (baby == null) return Stream.value([]);
+
+  final nextDay = ref.watch(activeDayProvider).add(const Duration(days: 1));
+  final dayKey = AppDateUtils.toDayKey(nextDay);
 
   return ref.watch(eventsRepositoryProvider).watchEventsForDay(baby.id, dayKey);
 });

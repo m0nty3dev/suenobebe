@@ -23,9 +23,15 @@ service cloud.firestore {
         && request.resource.data.caregivers.size() == 1
         && request.resource.data.caregivers[0] == request.auth.uid;
 
-      // Update: cuidadores existentes; cambios en caregivers solo via Cloud Function
+      // Update: solo campos que el cliente puede escribir (§6.3).
+      // trial solo se puede tocar para escribir firstEventAt por primera vez.
       allow update: if isCaregiverOf()
-        && request.resource.data.caregivers == resource.data.caregivers;
+        && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['name', 'sex', 'birthDate', 'photoUrl', 'caregiversInfo', 'trial', 'updatedAt'])
+        && (!('trial' in request.resource.data.diff(resource.data).affectedKeys())
+            || (request.resource.data.trial.diff(resource.data.trial)
+                   .affectedKeys().hasOnly(['firstEventAt'])
+                && resource.data.trial.firstEventAt == null));
 
       // Delete: solo via Cloud Function
       allow delete: if false;

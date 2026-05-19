@@ -6,10 +6,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import '../../data/events_repository.dart';
 import '../../domain/models/baby_event.dart';
 import '../../domain/models/event_type.dart';
-import '../../../baby/presentation/controllers/current_baby_provider.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/config/constants.dart';
-import '../../../../core/widgets/app_dialog.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../core/services/analytics/analytics_service.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -36,8 +34,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   DateTime? _editStartAt;
   DateTime? _editEndAt;
-  int? _editBottleMl;
-  String? _editNote;
   final _noteCtrl = TextEditingController();
   final _mlCtrl = TextEditingController();
 
@@ -73,35 +69,38 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   }
 
   Future<void> _delete() async {
-    // Capture everything before any async gap or navigation
+    if (_event == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar evento'),
+        content: const Text('¿Borrar este evento? No se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Eliminar',
+                style: TextStyle(color: AppColors.errorColor)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
     final repo = ref.read(eventsRepositoryProvider);
-    final babyId = widget.babyId;
-    final eventId = widget.eventId;
-    final eventType = _event?.type.name ?? '';
+    final eventType = _event!.type.name;
 
-    // Navigate away immediately — undo snackbar IS the confirmation
-    router.pop();
-
-    bool undone = false;
-    final controller = messenger.showSnackBar(
-      SnackBar(
-        content: const Text('Evento eliminado'),
-        duration: const Duration(seconds: 5),
-        action: SnackBarAction(
-          label: 'Deshacer',
-          onPressed: () => undone = true,
-        ),
-      ),
-    );
-
-    await controller.closed;
-    if (!undone) {
-      try {
-        AnalyticsService.logEventDeleted(eventType);
-        await repo.deleteEvent(babyId, eventId);
-      } catch (_) {
+    try {
+      await repo.deleteEvent(widget.babyId, widget.eventId);
+      AnalyticsService.logEventDeleted(eventType);
+      if (mounted) router.pop();
+    } catch (e) {
+      if (mounted) {
         messenger.showSnackBar(
           const SnackBar(content: Text('Error al eliminar el evento')),
         );

@@ -59,26 +59,18 @@ class ShellScreen extends ConsumerWidget {
               context.go('/settings');
           }
         },
-        items: [
+        items: const [
           BottomNavigationBarItem(
-            icon: Badge(
-              isLabelVisible: hasLive,
-              smallSize: 8,
-              child: const PhosphorIcon(PhosphorIconsRegular.house),
-            ),
-            activeIcon: Badge(
-              isLabelVisible: hasLive,
-              smallSize: 8,
-              child: const PhosphorIcon(PhosphorIconsFill.house),
-            ),
+            icon: PhosphorIcon(PhosphorIconsRegular.house),
+            activeIcon: PhosphorIcon(PhosphorIconsFill.house),
             label: 'Inicio',
           ),
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: PhosphorIcon(PhosphorIconsRegular.chartBar),
             activeIcon: PhosphorIcon(PhosphorIconsFill.chartBar),
             label: 'Estadísticas',
           ),
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: PhosphorIcon(PhosphorIconsRegular.gear),
             activeIcon: PhosphorIcon(PhosphorIconsFill.gear),
             label: 'Ajustes',

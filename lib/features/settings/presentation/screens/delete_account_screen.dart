@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_dialog.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/analytics/analytics_service.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 
 class DeleteAccountScreen extends ConsumerStatefulWidget {
   const DeleteAccountScreen({super.key});
@@ -16,10 +17,8 @@ class DeleteAccountScreen extends ConsumerStatefulWidget {
       _DeleteAccountScreenState();
 }
 
-class _DeleteAccountScreenState
-    extends ConsumerState<DeleteAccountScreen> {
+class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
   bool _loading = false;
-  bool _deletionScheduled = false;
 
   final _functions =
       FirebaseFunctions.instanceFor(region: AppConstants.firebaseRegion);
@@ -38,18 +37,14 @@ class _DeleteAccountScreenState
     setState(() => _loading = true);
     try {
       await _functions.httpsCallable('requestAccountDeletion').call();
-      setState(() {
-        _loading = false;
-        _deletionScheduled = true;
-      });
       AnalyticsService.logDeleteAccountRequested();
       if (mounted) {
-        showSuccessSnackbar(
-            context, 'Cuenta marcada para eliminar en 7 días');
+        showSuccessSnackbar(context, 'Cuenta marcada para eliminar en 7 días');
       }
     } catch (e) {
-      setState(() => _loading = false);
       if (mounted) showErrorSnackbar(context, 'Error: $e');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -57,20 +52,24 @@ class _DeleteAccountScreenState
     setState(() => _loading = true);
     try {
       await _functions.httpsCallable('cancelAccountDeletion').call();
-      setState(() {
-        _loading = false;
-        _deletionScheduled = false;
-      });
       AnalyticsService.logDeleteAccountCancelled();
       if (mounted) showSuccessSnackbar(context, 'Borrado cancelado');
     } catch (e) {
-      setState(() => _loading = false);
       if (mounted) showErrorSnackbar(context, 'Error: $e');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Derive deletion state from Firestore — survives navigation and app restart.
+    final deletionScheduled = ref
+            .watch(appUserProvider)
+            .valueOrNull
+            ?.deletionScheduledAt !=
+        null;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Borrar cuenta')),
       body: SafeArea(
@@ -92,17 +91,17 @@ class _DeleteAccountScreenState
                 'Puedes cancelar este proceso iniciando sesión durante ese periodo.',
               ),
               const SizedBox(height: 32),
-              if (!_deletionScheduled)
+              if (!deletionScheduled)
                 AppButton(
                   label: 'Borrar mi cuenta',
-                  onPressed: _requestDeletion,
+                  onPressed: _loading ? null : _requestDeletion,
                   loading: _loading,
                   color: AppColors.errorColor,
                 )
               else
                 AppButton(
                   label: 'Cancelar borrado',
-                  onPressed: _cancelDeletion,
+                  onPressed: _loading ? null : _cancelDeletion,
                   loading: _loading,
                 ),
             ],

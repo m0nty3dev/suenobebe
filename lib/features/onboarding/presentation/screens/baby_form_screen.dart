@@ -6,7 +6,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:io';
 import '../../../baby/domain/models/baby.dart';
 import '../../../baby/data/baby_repository.dart';
-import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/data/auth_repository.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_snackbar.dart';

@@ -27,7 +27,6 @@ class _ManualEntryScreenState extends ConsumerState<ManualEntryScreen> {
   late EventType _type;
   late DateTime _startAt;
   DateTime? _endAt;
-  int? _bottleMl;
   bool _loading = false;
   final _noteCtrl = TextEditingController();
   final _mlCtrl = TextEditingController();

@@ -10,6 +10,7 @@ import '../widgets/predicted_nap_banner.dart';
 import '../../../baby/presentation/controllers/current_baby_provider.dart';
 import '../../../events/presentation/screens/add_event_sheet.dart';
 import '../../../subscription/presentation/controllers/subscription_controller.dart';
+import '../../../baby/domain/models/baby.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/services/ads/admob_banner.dart';
 import '../../../events/domain/models/baby_event.dart';
@@ -23,6 +24,7 @@ class HomeScreen extends ConsumerWidget {
     final baby = ref.watch(currentBabyProvider).valueOrNull;
     final events = ref.watch(activeDayEventsProvider).valueOrNull ?? [];
     final prevEvents = ref.watch(prevActiveDayEventsProvider).valueOrNull ?? [];
+    final nextEvents = ref.watch(nextActiveDayEventsProvider).valueOrNull ?? [];
     final dayMode = ref.watch(effectiveDayModeProvider);
     final activeDay = ref.watch(activeDayProvider);
     final canWrite = ref.watch(canWriteProvider);
@@ -103,6 +105,7 @@ class HomeScreen extends ConsumerWidget {
                         child: TimelineBar(
                           events: events,
                           previousDayEvents: prevEvents,
+                          nextDayEvents: nextEvents,
                           baby: baby,
                           dayMode: dayMode,
                           activeDay: activeDay,
@@ -155,22 +158,22 @@ class _TrialBanner extends ConsumerWidget {
     if (baby == null) return const SizedBox.shrink();
 
     final sub = baby.subscription;
-    final statusName = sub.status.name;
+    final status = sub.status;
 
     String? bannerText;
-    if (statusName == 'trial') {
+    if (status == SubscriptionStatus.trial) {
       final remaining = baby.trial.expiresAt != null
           ? baby.trial.expiresAt!.difference(DateTime.now()).inDays + 1
           : 0;
       if (remaining > 0) bannerText = 'Trial: te quedan $remaining días';
-    } else if (statusName == 'cancelled') {
+    } else if (status == SubscriptionStatus.cancelled) {
       final remaining = sub.expiresAt != null
           ? sub.expiresAt!.difference(DateTime.now()).inDays + 1
           : 0;
       if (remaining > 0) {
         bannerText = 'Tu suscripción se cancela en $remaining días';
       }
-    } else if (statusName == 'grace') {
+    } else if (status == SubscriptionStatus.grace) {
       bannerText = 'Pago pendiente: regularízalo';
     }
 
@@ -218,7 +221,9 @@ class _DailySummaryPanel extends ConsumerWidget {
     var total = Duration.zero;
     final now = DateTime.now().toLocal();
     for (final e in events) {
-      if (e.type == EventType.nap || e.type == EventType.nightWake) {
+      // Only nap events count as sleep in the day summary.
+      // night_wake is awake time, bedtime/morning_wake are point events.
+      if (e.type == EventType.nap) {
         if (e.isLive) {
           total += now.difference(e.startAt);
         } else if (e.durationSec != null) {

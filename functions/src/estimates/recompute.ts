@@ -13,10 +13,11 @@ interface SleepDefault {
 }
 
 function ageInMonths(birthDate: Date, now: Date): number {
-  return (
+  let months =
     (now.getFullYear() - birthDate.getFullYear()) * 12 +
-    (now.getMonth() - birthDate.getMonth())
-  );
+    (now.getMonth() - birthDate.getMonth());
+  if (now.getDate() < birthDate.getDate()) months--;
+  return months < 0 ? 0 : months;
 }
 
 function timeToMinutes(t: string): number {

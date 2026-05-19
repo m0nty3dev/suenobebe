@@ -16,6 +16,7 @@ class TimelineBar extends StatefulWidget {
     required this.dayMode,
     required this.activeDay,
     this.previousDayEvents = const [],
+    this.nextDayEvents = const [],
     this.onEventTap,
   });
 
@@ -25,6 +26,9 @@ class TimelineBar extends StatefulWidget {
   final DateTime activeDay;
   // Events from the day before activeDay — used to locate bedtime in early-morning night mode.
   final List<BabyEvent> previousDayEvents;
+  // Events from the day after activeDay — used to show the actual morningWake
+  // of the next day when viewing a historical night in evening mode.
+  final List<BabyEvent> nextDayEvents;
   final void Function(BabyEvent)? onEventTap;
 
   @override
@@ -91,9 +95,11 @@ class _TimelineBarState extends State<TimelineBar> {
         return _findEventIn(widget.events, EventType.morningWake)?.startAt ??
             _parseTime(_defaultMorning, widget.activeDay);
       }
-      // Evening: ends at tomorrow's morningWake event or 08:00 tomorrow.
+      // Evening: ends at the next day's actual morningWake (historical viewing)
+      // or defaults to 08:00 of the next day for a live/future night.
       final nextDay = widget.activeDay.add(const Duration(days: 1));
-      return _parseTime(_defaultMorning, nextDay);
+      return _findEventIn(widget.nextDayEvents, EventType.morningWake)?.startAt ??
+          _parseTime(_defaultMorning, nextDay);
     }
     // Day mode: ends at bedtime event or midnight (00:00 next day) by default.
     final nextDay = widget.activeDay.add(const Duration(days: 1));

@@ -76,7 +76,7 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Términos y Privacidad'),
             trailing: const PhosphorIcon(PhosphorIconsRegular.arrowSquareOut),
             onTap: () => launchUrl(
-              Uri.parse('https://suenobebe.app/privacy'),
+              Uri.parse('https://m0nty3dev.github.io/suenobebe/privacy.html'),
               mode: LaunchMode.externalApplication,
             ),
           ),

@@ -135,10 +135,13 @@ class PredictNextNap {
   /// Returns age-appropriate nap count, nap duration, and night sleep
   /// reference values for display/informational purposes.
   static _AgeNorms? normsFor(Baby baby) {
-    final ageMonths = (DateTime.now().year - baby.birthDate.year) * 12 +
-        (DateTime.now().month - baby.birthDate.month);
+    final now = DateTime.now();
+    final birth = baby.birthDate;
+    var months = (now.year - birth.year) * 12 + (now.month - birth.month);
+    if (now.day < birth.day) months--;
+    if (months < 0) months = 0;
     for (final row in _ageTable) {
-      if (ageMonths >= row.minAgeMonths && ageMonths <= row.maxAgeMonths) return row;
+      if (months >= row.minAgeMonths && months <= row.maxAgeMonths) return row;
     }
     return null;
   }
@@ -173,6 +176,10 @@ class PredictNextNap {
     return windows.reduce((a, b) => a + b) ~/ windows.length;
   }
 
-  int _ageInMonths(DateTime birthDate, DateTime now) =>
-      (now.year - birthDate.year) * 12 + (now.month - birthDate.month);
+  int _ageInMonths(DateTime birthDate, DateTime now) {
+    var months = (now.year - birthDate.year) * 12 +
+        (now.month - birthDate.month);
+    if (now.day < birthDate.day) months--;
+    return months < 0 ? 0 : months;
+  }
 }

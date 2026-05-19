@@ -7,14 +7,14 @@ part 'baby.g.dart';
 enum BabySex { male, female, other }
 
 enum SubscriptionStatus {
-  none,
-  trial,
-  trialExpired,
-  active,
-  grace,
-  onHold,
-  cancelled,
-  expired,
+  @JsonValue('none') none,
+  @JsonValue('trial') trial,
+  @JsonValue('trial_expired') trialExpired,
+  @JsonValue('active') active,
+  @JsonValue('grace') grace,
+  @JsonValue('on_hold') onHold,
+  @JsonValue('cancelled') cancelled,
+  @JsonValue('expired') expired,
 }
 
 enum SubscriptionPlan { monthly, annual }
@@ -71,9 +71,13 @@ class Baby with _$Baby {
       subscription: BabySubscription.fromJson(
         _normalizeTimestamps(Map<String, dynamic>.from(data['subscription'] as Map? ?? {})),
       ),
-      trial: BabyTrial.fromJson(
-        _normalizeTimestamps(Map<String, dynamic>.from(data['trial'] as Map? ?? {})),
-      ),
+      trial: () {
+        final rawTrial = Map<String, dynamic>.from(data['trial'] as Map? ?? {});
+        // Guard against documents missing hardExpiresAt (legacy or malformed).
+        rawTrial.putIfAbsent('hardExpiresAt',
+            () => DateTime.now().add(const Duration(days: 30)).toIso8601String());
+        return BabyTrial.fromJson(_normalizeTimestamps(rawTrial));
+      }(),
       estimatedMorningWake: data['estimatedMorningWake'] as String? ?? '08:00',
       estimatedBedtime: data['estimatedBedtime'] as String? ?? '22:00',
       estimatesRecomputedAt:

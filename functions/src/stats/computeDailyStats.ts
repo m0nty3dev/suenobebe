@@ -66,6 +66,10 @@ async function computeAndWriteDay(babyId: string, dayKey: string): Promise<void>
         nightWakeCount++;
         if (e.endAt) {
           nightWakeIntervals.push({ startMs: e.startAt.toMillis(), endMs: e.endAt.toMillis() });
+        } else {
+          // Live night_wake: subtract up to now so night sleep is not overstated
+          // while the baby is still awake. Auto-corrects when endAt is written.
+          nightWakeIntervals.push({ startMs: e.startAt.toMillis(), endMs: Date.now() });
         }
         break;
       case 'bedtime':
@@ -125,8 +129,10 @@ async function computeAndWriteDay(babyId: string, dayKey: string): Promise<void>
       }
     }
 
-    if (nightMins > 0 && nightMins <= 720) {
-      totalSleepNightMinutes = nightMins;
+    // Cap at 720 min (12 h) — anything longer is a data anomaly.
+    // Clamp instead of dropping so the value is never silently zeroed.
+    if (nightMins > 0) {
+      totalSleepNightMinutes = Math.min(nightMins, 720);
     }
   }
 

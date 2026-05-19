@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/baby_event.dart';
 import '../../data/events_repository.dart';
 import 'validate_no_overlap.dart';
 import 'create_event.dart';

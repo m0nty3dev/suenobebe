@@ -14,7 +14,15 @@ class CountersPanel extends ConsumerWidget {
     // Rebuild once per minute.
     ref.watch(minuteTickProvider);
 
-    final events = ref.watch(todayEventsProvider).valueOrNull ?? [];
+    final todayEvents = ref.watch(todayEventsProvider).valueOrNull ?? [];
+    // Include yesterday's events so the sleep counter finds the bedtime event
+    // after midnight (bedtime has dayKey = yesterday).
+    final prevEvents = ref.watch(prevTodayEventsProvider).valueOrNull ?? [];
+    final seen = <String>{};
+    final events = [...prevEvents, ...todayEvents]
+        .where((e) => seen.add(e.id))
+        .toList();
+
     final result = ComputeCounters()(
       events: events,
       now: AppDateUtils.nowMadrid(),

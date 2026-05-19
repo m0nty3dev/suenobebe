@@ -4,25 +4,6 @@ import 'package:timezone/timezone.dart' as tz;
 class AppDateUtils {
   static String toDayKey(DateTime dt) => DateFormat('yyyy-MM-dd').format(dt);
 
-  /// Devuelve el dayKey considerando la regla de noche:
-  /// si la hora es < 12:00, pertenece al día anterior si hay bedtime registrado ese día.
-  /// En la práctica, el cliente calcula el dayKey pasando la fecha "del día activo".
-  static String dayKeyForEvent({
-    required DateTime eventTime,
-    required DateTime? activeDayBedtime,
-  }) {
-    if (activeDayBedtime != null && eventTime.isAfter(activeDayBedtime)) {
-      // Si el evento ocurre después del bedtime, pertenece al mismo día que el bedtime
-      return toDayKey(activeDayBedtime);
-    }
-    // Madrugada (antes de las 12:00) y hay bedtime el día anterior → día anterior
-    if (eventTime.hour < 12) {
-      final yesterday = eventTime.subtract(const Duration(days: 1));
-      return toDayKey(yesterday);
-    }
-    return toDayKey(eventTime);
-  }
-
   static String formatDuration(Duration d) {
     final h = d.inHours;
     final m = d.inMinutes.remainder(60);

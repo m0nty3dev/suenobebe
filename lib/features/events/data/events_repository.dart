@@ -157,8 +157,7 @@ class EventsRepository {
     try {
       final cached = await babyRef.get(const GetOptions(source: Source.cache));
       if (cached.exists) {
-        final trial = (cached.data() as Map<String, dynamic>?)?['trial']
-            as Map<String, dynamic>?;
+        final trial = cached.data()?['trial'] as Map<String, dynamic>?;
         if (trial?['firstEventAt'] != null) return false;
       }
     } catch (_) {
@@ -168,8 +167,7 @@ class EventsRepository {
     bool wasEmpty = false;
     await _firestore.runTransaction((tx) async {
       final snap = await tx.get(babyRef);
-      final trial = (snap.data() as Map<String, dynamic>?)?['trial']
-          as Map<String, dynamic>?;
+      final trial = snap.data()?['trial'] as Map<String, dynamic>?;
       if (trial?['firstEventAt'] == null) {
         tx.update(babyRef, {
           'trial.firstEventAt': FieldValue.serverTimestamp(),
@@ -226,7 +224,8 @@ class EventsRepository {
   }
 
   Future<void> deleteEvent(String babyId, String eventId) async {
-    await _eventsRef(babyId).doc(eventId).delete();
+    final callable = _functions.httpsCallable('deleteEventCallable');
+    await callable.call({'babyId': babyId, 'eventId': eventId});
   }
 
   Future<BabyEvent?> fetchLiveEvent(String babyId) async {

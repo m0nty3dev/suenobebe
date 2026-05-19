@@ -11,7 +11,6 @@ import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../domain/usecases/validate_no_overlap.dart';
 import '../../../../core/utils/date_utils.dart';
-import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../app/theme/app_colors.dart';
 
 class AddEventSheet extends ConsumerWidget {
@@ -304,31 +303,6 @@ class _EventCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _EventListTile extends StatelessWidget {
-  const _EventListTile({required this.type, required this.onTap});
-
-  final EventType type;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: type.color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: PhosphorIcon(type.icon, color: type.color, size: 20),
-      ),
-      title: Text(type.label),
-      trailing: const PhosphorIcon(PhosphorIconsRegular.caretRight, size: 16),
-      onTap: onTap,
-      contentPadding: EdgeInsets.zero,
     );
   }
 }

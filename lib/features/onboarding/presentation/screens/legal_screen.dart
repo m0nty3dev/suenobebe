@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/data/auth_repository.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../core/config/constants.dart';
 
 class LegalScreen extends ConsumerStatefulWidget {
@@ -35,7 +35,7 @@ class _LegalScreenState extends ConsumerState<LegalScreen> {
       });
       if (mounted) context.go('/onboarding/notifications');
     } catch (e) {
-      // ignore
+      if (mounted) showErrorSnackbar(context, 'Error al guardar: inténtalo de nuevo');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -70,7 +70,7 @@ class _LegalScreenState extends ConsumerState<LegalScreen> {
                   children: [
                     const Text('Acepto los '),
                     GestureDetector(
-                      onTap: () => launchUrl(Uri.parse('https://suenobebe.app/terms')),
+                      onTap: () => launchUrl(Uri.parse('https://m0nty3dev.github.io/suenobebe/privacy.html')),
                       child: Text(
                         'Términos de Uso',
                         style: TextStyle(
@@ -81,7 +81,7 @@ class _LegalScreenState extends ConsumerState<LegalScreen> {
                     ),
                     const Text(' y la '),
                     GestureDetector(
-                      onTap: () => launchUrl(Uri.parse('https://suenobebe.app/privacy')),
+                      onTap: () => launchUrl(Uri.parse('https://m0nty3dev.github.io/suenobebe/privacy.html')),
                       child: Text(
                         'Política de Privacidad',
                         style: TextStyle(
