@@ -131,9 +131,14 @@ async function computeAndWriteDay(babyId: string, dayKey: string): Promise<void>
 
     // Cap at 720 min (12 h) — anything longer is a data anomaly.
     // Clamp instead of dropping so the value is never silently zeroed.
-    if (nightMins > 0) {
-      totalSleepNightMinutes = Math.min(nightMins, 720);
+    // A negative value means overlapping/corrupt wake intervals; log and treat as 0.
+    if (nightMins < 0) {
+      functions.logger.warn('Negative night sleep calculated — likely overlapping night_wake intervals', {
+        babyId, dayKey, nightMins,
+      });
+      nightMins = 0;
     }
+    totalSleepNightMinutes = Math.min(nightMins, 720);
   }
 
   await db.collection('babies').doc(babyId)

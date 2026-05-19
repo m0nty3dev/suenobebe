@@ -295,4 +295,74 @@ void main() {
       expect(result.feedingDuration, const Duration(hours: 1));
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Multiple nightWakes — cross-midnight regression tests
+  // ---------------------------------------------------------------------------
+
+  group('ComputeCounters — multiple night wakes', () {
+    test('two completed nightWakes cross-midnight, currently sleeping after second wake', () {
+      // bedtime 21:00 D
+      // nightWake 01:00-01:30 D+1
+      // nightWake 02:45-03:15 D+1
+      // now 04:00 D+1 → most recent event is nightWake ended 03:15 → sleeping
+      final bedtime = DateTime(2024, 1, 15, 21, 0);
+      final wake1Start = DateTime(2024, 1, 16, 1, 0);
+      final wake1End = DateTime(2024, 1, 16, 1, 30);
+      final wake2Start = DateTime(2024, 1, 16, 2, 45);
+      final wake2End = DateTime(2024, 1, 16, 3, 15);
+      final now = DateTime(2024, 1, 16, 4, 0);
+
+      final result = counter(
+        events: [
+          _event(type: EventType.bedtime, startAt: bedtime, dayKey: '2024-01-15'),
+          _event(type: EventType.nightWake, startAt: wake1Start, endAt: wake1End, dayKey: '2024-01-16'),
+          _event(type: EventType.nightWake, startAt: wake2Start, endAt: wake2End, dayKey: '2024-01-16'),
+        ],
+        now: now,
+      );
+      // Most recent state change: wake2End (03:15) → back to sleeping
+      expect(result.sleepLabel, 'Durmiendo hace');
+      expect(result.sleepDuration, const Duration(minutes: 45)); // 04:00 - 03:15
+    });
+
+    test('live second nightWake → Despierto desde', () {
+      final bedtime = DateTime(2024, 1, 15, 21, 0);
+      final wake1Start = DateTime(2024, 1, 16, 0, 30);
+      final wake1End = DateTime(2024, 1, 16, 1, 0);
+      final wake2Start = DateTime(2024, 1, 16, 3, 0);
+      final now = DateTime(2024, 1, 16, 3, 20);
+
+      final result = counter(
+        events: [
+          _event(type: EventType.bedtime, startAt: bedtime, dayKey: '2024-01-15'),
+          _event(type: EventType.nightWake, startAt: wake1Start, endAt: wake1End, dayKey: '2024-01-16'),
+          _event(type: EventType.nightWake, startAt: wake2Start, status: EventStatus.live, dayKey: '2024-01-16'),
+        ],
+        now: now,
+      );
+      // Live nightWake overrides state machine
+      expect(result.sleepLabel, 'Despierto desde');
+      expect(result.sleepDuration, const Duration(minutes: 20)); // 03:20 - 03:00
+    });
+
+    test('morningWake after nightWakes → Despierto hace from morningWake', () {
+      final bedtime = DateTime(2024, 1, 15, 21, 0);
+      final wake1Start = DateTime(2024, 1, 16, 1, 0);
+      final wake1End = DateTime(2024, 1, 16, 1, 30);
+      final morningWake = DateTime(2024, 1, 16, 7, 45);
+      final now = DateTime(2024, 1, 16, 9, 0);
+
+      final result = counter(
+        events: [
+          _event(type: EventType.bedtime, startAt: bedtime, dayKey: '2024-01-15'),
+          _event(type: EventType.nightWake, startAt: wake1Start, endAt: wake1End, dayKey: '2024-01-16'),
+          _event(type: EventType.morningWake, startAt: morningWake, dayKey: '2024-01-16'),
+        ],
+        now: now,
+      );
+      expect(result.sleepLabel, 'Despierto hace');
+      expect(result.sleepDuration, const Duration(hours: 1, minutes: 15)); // 09:00 - 07:45
+    });
+  });
 }

@@ -312,5 +312,46 @@ void main() {
 
       expect(result, isNull);
     });
+
+    test('personalizedWakeWindow: malformed event with null endAt is skipped (no crash)', () {
+      // Regression test for the null-endAt guard in _personalizedWakeWindow.
+      // A completed nap without endAt (data anomaly) must not crash the predictor
+      // or produce incorrect wake windows.
+      final baby = _baby(birth4mo);
+      final wakeTime = DateTime(2024, 1, 15, 7, 30);
+      final now = DateTime(2024, 1, 15, 8, 15);
+
+      // Build 5 days of "history" each having a morning_wake + a nap with null endAt
+      final historicalEvents = <BabyEvent>[];
+      for (int d = 0; d < 5; d++) {
+        final base = DateTime(2024, 1, 10 + d, 7, 0);
+        historicalEvents.add(_wakeEvent(startAt: base, dayKey: '2024-01-${10 + d}'));
+        // Nap without endAt (status=completed but data anomaly)
+        historicalEvents.add(BabyEvent(
+          id: 'nap-$d',
+          type: EventType.nap,
+          startAt: base.add(const Duration(hours: 2)),
+          endAt: null, // <- anomaly
+          status: EventStatus.completed,
+          dayKey: '2024-01-${10 + d}',
+          createdBy: 'uid',
+          createdAt: base,
+          updatedAt: base,
+          metadata: const EventMetadata(),
+        ));
+      }
+
+      // Should not crash; uses generic (age-based) window instead of personalized.
+      final result = predictor(
+        baby: baby,
+        todayEvents: [_wakeEvent(startAt: wakeTime)],
+        historicalEvents: historicalEvents,
+        now: now,
+      );
+      // Generic 4-month window = 90 min → prediction at 09:00
+      expect(result, isNotNull);
+      expect(result!.isPersonalized, isFalse);
+      expect(result.predictedAt, equals(DateTime(2024, 1, 15, 9, 0)));
+    });
   });
 }

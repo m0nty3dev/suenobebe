@@ -163,7 +163,7 @@ class PredictNextNap {
         if (e.type == EventType.morningWake) {
           lastWake = e.startAt;
         } else if ((e.type == EventType.nap || e.type == EventType.nightWake) &&
-            !e.isLive) {
+            !e.isLive && e.endAt != null) {
           if (lastWake != null) {
             final mins = e.startAt.difference(lastWake).inMinutes;
             if (mins > 20 && mins < 360) windows.add(mins);

@@ -31,12 +31,29 @@ final minuteTickProvider = StreamProvider.autoDispose<DateTime>((ref) {
   return controller.stream;
 });
 
+// Stable dayKey providers driven by minuteTickProvider.
+// Because Provider uses == comparison, downstream StreamProviders only rebuild
+// when the dayKey string actually changes (once per day, at midnight).
+// Without this, if the app is open at midnight the Firestore subscriptions
+// would keep watching yesterday's dayKey until the provider is recreated.
+final _todayDayKeyProvider = Provider.autoDispose<String>((ref) {
+  ref.watch(minuteTickProvider); // Re-evaluates each minute
+  return AppDateUtils.toDayKey(AppDateUtils.nowMadrid());
+});
+
+final _prevTodayDayKeyProvider = Provider.autoDispose<String>((ref) {
+  ref.watch(minuteTickProvider);
+  return AppDateUtils.toDayKey(
+    AppDateUtils.nowMadrid().subtract(const Duration(days: 1)),
+  );
+});
+
 // Today's events — counters and prediction always reflect today
 // even when the user is browsing a past day on the timeline.
 final todayEventsProvider = StreamProvider.autoDispose<List<BabyEvent>>((ref) {
   final baby = ref.watch(currentBabyProvider).valueOrNull;
   if (baby == null) return Stream.value([]);
-  final todayKey = AppDateUtils.toDayKey(AppDateUtils.nowMadrid());
+  final todayKey = ref.watch(_todayDayKeyProvider);
   return ref.watch(eventsRepositoryProvider).watchEventsForDay(baby.id, todayKey);
 });
 
@@ -46,9 +63,8 @@ final todayEventsProvider = StreamProvider.autoDispose<List<BabyEvent>>((ref) {
 final prevTodayEventsProvider = StreamProvider.autoDispose<List<BabyEvent>>((ref) {
   final baby = ref.watch(currentBabyProvider).valueOrNull;
   if (baby == null) return Stream.value([]);
-  final yesterday = AppDateUtils.nowMadrid().subtract(const Duration(days: 1));
-  final dayKey = AppDateUtils.toDayKey(yesterday);
-  return ref.watch(eventsRepositoryProvider).watchEventsForDay(baby.id, dayKey);
+  final prevKey = ref.watch(_prevTodayDayKeyProvider);
+  return ref.watch(eventsRepositoryProvider).watchEventsForDay(baby.id, prevKey);
 });
 
 // Last 14 days of events for personalized nap prediction.

@@ -1,14 +1,15 @@
-﻿import 'dart:async';
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../events/domain/models/baby_event.dart';
 import '../../../events/domain/models/event_type.dart';
 import '../../../baby/domain/models/baby.dart';
 import '../../domain/usecases/compute_day_mode.dart';
+import '../../presentation/controllers/home_controller.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/date_utils.dart';
 
-class TimelineBar extends StatefulWidget {
+class TimelineBar extends ConsumerStatefulWidget {
   const TimelineBar({
     super.key,
     required this.events,
@@ -32,25 +33,12 @@ class TimelineBar extends StatefulWidget {
   final void Function(BabyEvent)? onEventTap;
 
   @override
-  State<TimelineBar> createState() => _TimelineBarState();
+  ConsumerState<TimelineBar> createState() => _TimelineBarState();
 }
 
-class _TimelineBarState extends State<TimelineBar> {
-  late Timer _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
+class _TimelineBarState extends ConsumerState<TimelineBar> {
+  // No private timer — rides the shared minuteTickProvider so all home widgets
+  // refresh in sync without creating extra Timer objects.
 
   // Hardcoded defaults: morningWake=08:00, bedtime=00:00 (midnight).
   // estimatedMorningWake/estimatedBedtime from baby are ONLY used by ComputeDayMode,
@@ -138,6 +126,10 @@ class _TimelineBarState extends State<TimelineBar> {
 
   @override
   Widget build(BuildContext context) {
+    // Ride the shared 1-minute clock so the "AHORA" indicator updates in sync
+    // with CountersPanel and PredictedNapBanner without a duplicate Timer.
+    ref.watch(minuteTickProvider);
+
     final start = _timelineStart;
     var end = _timelineEnd;
 
