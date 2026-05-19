@@ -12,7 +12,7 @@ interface EventDoc {
   endAt?: admin.firestore.Timestamp;
   durationSec?: number;
   dayKey: string;
-  metadata?: { bottleMl?: number };
+  metadata?: { bottleMl?: number; leftDurationSec?: number; rightDurationSec?: number };
 }
 
 interface NightWakeInterval {
